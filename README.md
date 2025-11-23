@@ -17,7 +17,7 @@
     footer{margin-top:2rem;padding-top:1rem;border-top:1px solid #eee}
     button{padding:.5rem 1rem;font-size:1rem}
   </style>
-   <script> (function(){ var s = document.createElement('script'); var h = document.querySelector('head') || document.body; s.src = 'https://acsbapp.com/apps/app/dist/js/app.js'; s.async = true; s.onload = function(){ acsbJS.init(); acsbJS.init({ hideComponents: ['colorAdjustments'] }); }; h.appendChild(s); })(); </script> 
+   <script> (function(){ var s = document.createElement('script'); var h = document.querySelector('head') || document.body; s.src = 'https://acsbapp.com/apps/app/dist/js/app.js'; s.async = true; s.onload = function(){ acsbJS.init({ hideComponents: ['colorAdjustments'] }); }; h.appendChild(s); })(); </script> 
 </head>
 <body>
   <a class="visually-hidden" href="#main">Skip to main content</a>
