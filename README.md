@@ -17,76 +17,157 @@
     footer{margin-top:2rem;padding-top:1rem;border-top:1px solid #eee}
     button{padding:.5rem 1rem;font-size:1rem}
   </style>
-   <script> (function(){   
-        try {
-          window.accessWidgetSpecificsOptions = window.accessWidgetSpecificsOptions || {};
-          window.accessWidgetSpecificsOptions.hideComponents = window.accessWidgetSpecificsOptions.hideComponents || [];
-          if (!window.accessWidgetSpecificsOptions.hideComponents.includes('colorAdjustments')) {
-            window.accessWidgetSpecificsOptions.hideComponents.push('colorAdjustments');
-          }
+   <script>(function () {
+  // Defensive global config - set BEFORE app.js executes if possible
+  try {
+    var targets = [
+      'accessWidgetSpecificsOptions',
+      'accessWidgetOptions',
+      'accessWidgetSpecifics',
+      'accessiBeOptions',
+      'acsbOptions'
+    ];
+    targets.forEach(function (k) {
+      window[k] = window[k] || {};
+      window[k].hideComponents = window[k].hideComponents || [];
+      if (!window[k].hideComponents.includes('colorAdjustments')) {
+        window[k].hideComponents.push('colorAdjustments');
+      }
+    });
+  } catch (e) {
+    console.warn('[site] Failed to set AccessiBe config', e);
+  }
 
-          window.accessWidgetOptions = window.accessWidgetOptions || {};
-          window.accessWidgetOptions.hideComponents = window.accessWidgetOptions.hideComponents || [];
-          if (!window.accessWidgetOptions.hideComponents.includes('colorAdjustments')) {
-            window.accessWidgetOptions.hideComponents.push('colorAdjustments');
-          }
+  function hideColorControls(root) {
+    root = root || document;
+    var selectors = [
+      '.acsb-color',
+      '.acsb-color-adjustments',
+      '[data-acsb-component="colorAdjustments"]',
+      '[data-acsb="colorAdjustments"]',
+      '.acsb-adjustment-color',
+      '.acsb-adjustments-color'
+    ];
 
-          window.accessWidgetSpecifics = window.accessWidgetSpecifics || {};
-          window.accessWidgetSpecifics.hideComponents = window.accessWidgetSpecifics.hideComponents || [];
-          if (!window.accessWidgetSpecifics.hideComponents.includes('colorAdjustments')) {
-            window.accessWidgetSpecifics.hideComponents.push('colorAdjustments');
-          }
-        } catch (e) {
-          // ignore
-        }
-
-        // Defensive: when the widget is ready, remove/hide any color-adjustment elements that remain
-        function hideColorControls() {
+    var found = 0;
+    try {
+      selectors.forEach(function (sel) {
+        Array.from(root.querySelectorAll(sel)).forEach(function (el) {
           try {
-            var selectors = [
-              '.acsb-color',
-              '.acsb-color-adjustments',
-              '[data-acsb-component="colorAdjustments"]',
-              '[data-acsb="colorAdjustments"]',
-              '.acsb-adjustment-color',
-              '.acsb-adjustments-color'
-            ];
-            selectors.forEach(function(sel) {
-              Array.from(document.querySelectorAll(sel)).forEach(function(el) {
-                el.style.display = 'none';
-                el.setAttribute('data-acsb-hidden', 'true');
-              });
-            });
-
-            var textKeywords = ['Color', 'Color Adjust', 'Color Adjustments', 'Color Contrast', 'Background Color', 'Text Color'];
-            Array.from(document.querySelectorAll('.acsb-widget, .acsb-body, .acsb-settings, .acsb-section, .acsb-item, .acsb-menu, [data-acsb]')).forEach(function(node) {
-              if (!node) return;
-              var text = (node.textContent || '').trim();
-              for (var i = 0; i < textKeywords.length; i++) {
-                var kw = textKeywords[i];
-                if (text.indexOf(kw) !== -1) {
-                  node.style.display = 'none';
-                  node.setAttribute('data-acsb-hidden', 'true');
-                  break;
-                }
-              }
-            });
-          } catch (e) {
-            // ignore
-          }
-        }
-
-        document.addEventListener('acsbReady', function() {
-          hideColorControls();
-          setTimeout(hideColorControls, 500);
-          setTimeout(hideColorControls, 2000);
+            el.style.setProperty('display', 'none', 'important');
+            el.setAttribute('data-acsb-hidden', 'true');
+            found++;
+          } catch (e) {}
         });
+      });
 
-        // Fallbacks if custom event isn't fired
-        window.addEventListener('load', function() {
-          setTimeout(hideColorControls, 1000);
-          setTimeout(hideColorControls, 3000);
-        }); var s = document.createElement('script'); var h = document.querySelector('head') || document.body; s.src = 'https://acsbapp.com/apps/app/dist/js/app.js'; s.async = true; s.onload = function(){ acsbJS.init(); }; h.appendChild(s); })(); </script> 
+      // Case-insensitive keyword match on node textContent / aria / title / dataset
+      var keywords = [
+        'color',
+        'colour',
+        'contrast',
+        'color adjust',
+        'color-adjust',
+        'color adjustments',
+        'color adjustment',
+        'high contrast',
+        'background color',
+        'text color'
+      ];
+
+      // Scan candidate nodes to avoid scanning the entire document if possible.
+      var candidates = root.querySelectorAll('.acsb-widget, .acsb-body, .acsb-settings, .acsb-section, .acsb-item, .acsb-menu, [data-acsb], button, a, [role="button"], [title], [aria-label], [data-name]');
+      Array.from(candidates).forEach(function (node) {
+        try {
+          var combined = (
+            (node.textContent || '') + ' ' +
+            (node.getAttribute && (node.getAttribute('aria-label') || '')) + ' ' +
+            (node.getAttribute && (node.getAttribute('title') || '')) + ' ' +
+            JSON.stringify(node.dataset || {})
+          ).toLowerCase();
+          for (var i = 0; i < keywords.length; i++) {
+            if (combined.indexOf(keywords[i]) !== -1) {
+              node.style.setProperty('display', 'none', 'important');
+              node.setAttribute('data-acsb-hidden', 'true');
+              found++;
+              break;
+            }
+          }
+        } catch (e) {}
+      });
+    } catch (e) {
+      console.warn('[site] hideColorControls error', e);
+    }
+    if (found) console.info('[site] hideColorControls hid elements:', found);
+    return found;
+  }
+
+  function checkIframes() {
+    try {
+      Array.from(document.querySelectorAll('iframe')).forEach(function (ifr) {
+        try {
+          var combined = ((ifr.src || '') + ' ' + (ifr.title || '') + ' ' + (ifr.name || '')).toLowerCase();
+          if (/acsb|accessibe|accessi/i.test(combined)) {
+            // cross-origin iframe likely — hide the iframe itself as a fallback
+            ifr.style.setProperty('display', 'none', 'important');
+            ifr.setAttribute('data-acsb-hidden', 'true');
+            console.info('[site] Hid AccessiBe iframe:', ifr.src || ifr.title || ifr.name);
+          }
+        } catch (e) {}
+      });
+    } catch (e) {
+      console.warn('[site] checkIframes error', e);
+    }
+  }
+
+  // MutationObserver to catch dynamically inserted widget nodes
+  var observer;
+  try {
+    observer = new MutationObserver(function () {
+      hideColorControls(document);
+      checkIframes();
+    });
+    observer.observe(document.documentElement || document.body, { childList: true, subtree: true });
+  } catch (e) {
+    console.warn('[site] Failed to create MutationObserver', e);
+  }
+
+  // Initial attempts + retries for late load
+  hideColorControls(document);
+  checkIframes();
+  setTimeout(function () { hideColorControls(document); checkIframes(); }, 800);
+  setTimeout(function () { hideColorControls(document); checkIframes(); }, 3000);
+  setTimeout(function () { hideColorControls(document); checkIframes(); }, 7000);
+
+  // Stop observing after 30s to avoid leaks
+  setTimeout(function () { try { observer && observer.disconnect(); } catch (e) {} }, 30000);
+
+  // If you want to load AccessiBe's app.js from here, only load it once.
+  if (!window.acsbJS && !document.querySelector('script[src*="acsbapp.com"]')) {
+    var s = document.createElement('script');
+    s.src = 'https://acsbapp.com/apps/app/dist/js/app.js';
+    s.async = true;
+    s.onload = function () {
+      try {
+        if (window.acsbJS && typeof acsbJS.init === 'function') {
+          acsbJS.init();
+          // re-run hide after widget initializes
+          setTimeout(function () { hideColorControls(document); checkIframes(); }, 200);
+          setTimeout(function () { hideColorControls(document); checkIframes(); }, 1000);
+        }
+      } catch (e) {
+        console.warn('[site] acsb init/onload error', e);
+      }
+    };
+    (document.head || document.body).appendChild(s);
+  } else {
+    // If app.js is loaded elsewhere, re-scan after acsbReady if fired
+    document.addEventListener('acsbReady', function () {
+      setTimeout(function () { hideColorControls(document); checkIframes(); }, 50);
+      setTimeout(function () { hideColorControls(document); checkIframes(); }, 400);
+    });
+  }
+})();</script> 
 </head>
 <body>
   <a class="visually-hidden" href="#main">Skip to main content</a>
