@@ -17,8 +17,76 @@
     footer{margin-top:2rem;padding-top:1rem;border-top:1px solid #eee}
     button{padding:.5rem 1rem;font-size:1rem}
   </style>
-   <script> (function(){  window.accessWidgetSpecificsOptions = window.accessWidgetSpecificsOptions || {};
-        window.accessWidgetSpecificsOptions.hideComponents = ['colorAdjustments']; var s = document.createElement('script'); var h = document.querySelector('head') || document.body; s.src = 'https://acsbapp.com/apps/app/dist/js/app.js'; s.async = true; s.onload = function(){ acsbJS.init({ hideComponents: ['colorAdjustments'] }); }; h.appendChild(s); })(); </script> 
+   <script> (function(){   
+        try {
+          window.accessWidgetSpecificsOptions = window.accessWidgetSpecificsOptions || {};
+          window.accessWidgetSpecificsOptions.hideComponents = window.accessWidgetSpecificsOptions.hideComponents || [];
+          if (!window.accessWidgetSpecificsOptions.hideComponents.includes('colorAdjustments')) {
+            window.accessWidgetSpecificsOptions.hideComponents.push('colorAdjustments');
+          }
+
+          window.accessWidgetOptions = window.accessWidgetOptions || {};
+          window.accessWidgetOptions.hideComponents = window.accessWidgetOptions.hideComponents || [];
+          if (!window.accessWidgetOptions.hideComponents.includes('colorAdjustments')) {
+            window.accessWidgetOptions.hideComponents.push('colorAdjustments');
+          }
+
+          window.accessWidgetSpecifics = window.accessWidgetSpecifics || {};
+          window.accessWidgetSpecifics.hideComponents = window.accessWidgetSpecifics.hideComponents || [];
+          if (!window.accessWidgetSpecifics.hideComponents.includes('colorAdjustments')) {
+            window.accessWidgetSpecifics.hideComponents.push('colorAdjustments');
+          }
+        } catch (e) {
+          // ignore
+        }
+
+        // Defensive: when the widget is ready, remove/hide any color-adjustment elements that remain
+        function hideColorControls() {
+          try {
+            var selectors = [
+              '.acsb-color',
+              '.acsb-color-adjustments',
+              '[data-acsb-component="colorAdjustments"]',
+              '[data-acsb="colorAdjustments"]',
+              '.acsb-adjustment-color',
+              '.acsb-adjustments-color'
+            ];
+            selectors.forEach(function(sel) {
+              Array.from(document.querySelectorAll(sel)).forEach(function(el) {
+                el.style.display = 'none';
+                el.setAttribute('data-acsb-hidden', 'true');
+              });
+            });
+
+            var textKeywords = ['Color', 'Color Adjust', 'Color Adjustments', 'Color Contrast', 'Background Color', 'Text Color'];
+            Array.from(document.querySelectorAll('.acsb-widget, .acsb-body, .acsb-settings, .acsb-section, .acsb-item, .acsb-menu, [data-acsb]')).forEach(function(node) {
+              if (!node) return;
+              var text = (node.textContent || '').trim();
+              for (var i = 0; i < textKeywords.length; i++) {
+                var kw = textKeywords[i];
+                if (text.indexOf(kw) !== -1) {
+                  node.style.display = 'none';
+                  node.setAttribute('data-acsb-hidden', 'true');
+                  break;
+                }
+              }
+            });
+          } catch (e) {
+            // ignore
+          }
+        }
+
+        document.addEventListener('acsbReady', function() {
+          hideColorControls();
+          setTimeout(hideColorControls, 500);
+          setTimeout(hideColorControls, 2000);
+        });
+
+        // Fallbacks if custom event isn't fired
+        window.addEventListener('load', function() {
+          setTimeout(hideColorControls, 1000);
+          setTimeout(hideColorControls, 3000);
+        }); var s = document.createElement('script'); var h = document.querySelector('head') || document.body; s.src = 'https://acsbapp.com/apps/app/dist/js/app.js'; s.async = true; s.onload = function(){ acsbJS.init(); }; h.appendChild(s); })(); </script> 
 </head>
 <body>
   <a class="visually-hidden" href="#main">Skip to main content</a>
