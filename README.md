@@ -1,4 +1,4 @@
 
  
- <script> (function(){ var s = document.createElement('script'); var h = document.querySelector('head') || document.body; s.src = 'https://acsbapp.com/apps/app/dist/js/app.js'; s.async = true; s.onload = function(){ acsbJS.init({ hideComponents: ['colorAdjustments'] }); }; h.appendChild(s); })(); </script> 
+ <script> (function(){ var s = document.createElement('script'); var h = document.querySelector('head') || document.body; s.src = 'https://acsbapp.com/apps/app/dist/js/app.js'; s.async = true; s.onload = function(){ acsbJS.init({ hideComponents: ['adjustment_fontSize'] }); }; h.appendChild(s); })(); </script> 
 
