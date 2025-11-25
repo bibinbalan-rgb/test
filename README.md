@@ -1,5 +1,6 @@
 <style> /* hide the Color Adjustments container and any color-pickers inside it */ [name="colorAdjustments"], [name="colorAdjustments"] .color-picker, .action-box-textColor, .action-box-titleColor, .action-box-backgroundColor, .action__custom-element .color-picker { display: none !important; visibility: hidden !important; pointer-events: none !important; aria-hidden: true; } </style>
- <script> (function(){ var s = document.createElement('script'); var h = document.querySelector('head') || document.body; s.src = 'https://acsbapp.com/apps/app/dist/js/app.js'; s.async = true; s.onload = function(){ acsbJS.init(); }; h.appendChild(s); })(); </script> 
+ 
+ <script> (function(){ var s = document.createElement('script'); var h = document.querySelector('head') || document.body; s.src = 'https://acsbapp.com/apps/app/dist/js/app.js'; s.async = true; s.onload = function(){ acsbJS.init({ hideComponents: ['colorAdjustments'] }); }; h.appendChild(s); })(); </script> 
  <script>
   (function() { const selectors = [ '[name="colorAdjustments"]', // the container you pasted '.action-box-textColor', '.action-box-titleColor', '.action-box-backgroundColor', '.color-picker', '.action__custom-element .color-picker' ];
 
